@@ -1,7 +1,8 @@
+extern crate time;
 
 use std::process::{Command, exit, ExitStatus};
 use std::env;
-use std::time::SystemTime;
+use time::PreciseTime;
 
 #[cfg(unix)]
 use std::os::unix::process::ExitStatusExt ;
@@ -19,7 +20,7 @@ fn main() {
     }
 
     loop {
-        let start = SystemTime::now();
+        let start = PreciseTime::now();
         match Command::new(&arguments[1])
                 .args(&arguments[2..])
                 .status() {
@@ -29,10 +30,7 @@ fn main() {
             },
             Ok(status) if status.success() => exit(0),
             Ok(status) => {
-                if let Ok(elapsed) = start.elapsed() {
-                    println!("totalrecall: After {}s", elapsed.as_secs());
-                }
-
+                println!("totalrecall: After {}s", start.to(PreciseTime::now()).num_seconds());
                 if let Some(signum) = signal(&status) {
                     println!("totalrecall: {} exited with signal({}), exiting",
                             arguments[1], signum);
