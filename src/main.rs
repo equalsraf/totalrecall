@@ -10,7 +10,7 @@ use std::os::unix::process::ExitStatusExt ;
 #[cfg(unix)]
 fn signal(status: &ExitStatus) -> Option<i32> { status.signal() }
 #[cfg(not(unix))]
-fn signal(status: &ExitStatus) -> Option<i32> { None }
+fn signal(_: &ExitStatus) -> Option<i32> { None }
 
 fn main() {
     let arguments: Vec<_> = env::args().collect();
