@@ -3,6 +3,8 @@ extern crate time;
 use std::process::{Command, exit, ExitStatus};
 use std::env;
 use time::PreciseTime;
+use std::thread::sleep;
+use std::time::Duration;
 
 #[cfg(unix)]
 use std::os::unix::process::ExitStatusExt ;
@@ -30,7 +32,6 @@ fn main() {
             },
             Ok(status) if status.success() => exit(0),
             Ok(status) => {
-                println!("totalrecall: After {}s", start.to(PreciseTime::now()).num_seconds());
                 if let Some(signum) = signal(&status) {
                     println!("totalrecall: {} exited with signal({}), exiting",
                             arguments[1], signum);
@@ -38,8 +39,17 @@ fn main() {
                 }
 
                 if let Some(code) = status.code() {
-                    println!("totalrecall: {} exited with code({}), restarting",
-                            arguments[1], code);
+                    if let Ok(elapsed) = start.to(PreciseTime::now()).to_std() {
+		        if elapsed.as_secs() < 2 {
+                            sleep(Duration::from_secs(1))
+		        }
+                        println!("totalrecall: After {}s {} exited with code({}), restarting",
+                                elapsed.as_secs(),
+                                arguments[1], code);
+                    } else {
+                        println!("totalrecall: {} exited with code({}), restarting",
+                                arguments[1], code);
+                    }
                 } else {
                     println!("totalrecall: {} terminated", arguments[1]);
                     exit(-1);
